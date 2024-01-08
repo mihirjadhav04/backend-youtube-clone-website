@@ -56,14 +56,14 @@ const userSchema = new Schema({
 userSchema.pre("save", async function (next) {
     // as we want to encryt only when the password is modified.
     if (this.isModified("password")){
-        this.password = bcrypt.hash(this.password, 10)
+        this.password = await bcrypt.hash(this.password, 10)
         next()
     }
 })
 
 // custom methods for password check and return boolean.
 userSchema.methods.isPasswordCorrect = async function(password){
-    return await bcrypt.compare(password,this.password, 10)
+    return await bcrypt.compare(password, this.password)
 }
 
 // custom method to generate accessToken. You can add async if required but as it is done fast ther is no need mostly.
