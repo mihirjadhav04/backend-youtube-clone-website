@@ -27,7 +27,9 @@ app.use(express.urlencoded({
 
 // configuraition for public static assests.
 app.use(express.static("public"))
+
 app.use(cookieParser())
+
 
 
 

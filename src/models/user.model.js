@@ -68,7 +68,7 @@ userSchema.methods.isPasswordCorrect = async function(password){
 
 // custom method to generate accessToken. You can add async if required but as it is done fast ther is no need mostly.
 userSchema.methods.generateAccessToken = function(){
-    jwt.sign(
+    return jwt.sign(
         {
             _id: this._id,
             email: this.email,
@@ -84,7 +84,7 @@ userSchema.methods.generateAccessToken = function(){
 
 // custom refresh token where you have less payload in sign.
 userSchema.methods.generateRefreshAccessToken = function(){
-    jwt.sign(
+    return jwt.sign(
         {
             _id: this._id,
         },
