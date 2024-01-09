@@ -243,4 +243,156 @@ const refreshAccessToken = asyncHandler( async(req, res) => {
 
 })
 
-export { registerUser, loginUser , logoutUser, refreshAccessToken}
+
+const changeCurrentPassword = asyncHandler( async (req, res) => {
+
+    // take old pasword and check it with the current password.
+    // if old password is wrong then throw error
+    // if old passwoard is correct then compare newPassword and confirmPassword
+    // if both are correct then add this pasworrd to db with hash through method present in user model. else throw error.
+    // return response of pasword update.
+
+    const {oldPassword, newPassword, confirmPassword } = req.body
+
+    const user = await User.findById(req.user?._id)
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(400, "Invaild old password!")
+    }
+
+    if (!(newPassword === confirmPassword)) {
+        throw new ApiError(400, "Your new password and confirm pasword is diffrernt.")
+    }
+
+    user.password = newPassword 
+    await user.save({validateBeforeSave: false})
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, {}, "Password updated successfully!")
+    )
+
+
+
+
+})
+
+const getCurrentUser = asyncHandler( async (req, res) => {
+    return res
+    .status(200)
+    .json(ApiResponse(
+        200,
+        req.user,
+        "current user fetched successfully."
+    ))
+})
+
+
+// PRO-TIP  : try to keep your file(images,etc) update data to the different route url. 
+
+const updateAccountDetails = asyncHandler( async (req, res) => {
+    const { fullname, email } = req.body 
+
+    if (!fullname || !email){
+        throw ApiError(400, "All fields are required!")
+    }
+
+    const user = User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullname,
+                email: email // can be written in both ways
+            }
+        },
+        {new : true}
+    ).select("-password")
+        // above we are all selecting and removing the password filed from final output in one go instead of calling it seperately.
+
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user,
+                "Account details updated successfully!"
+            )
+        )
+
+})
+
+//update user avatar
+
+const updateUserAvatar = asyncHandler( async (req, res) => {
+    const avatarLocalPath = req.file?.path
+
+    if (!avatarLocalPath){
+        throw new ApiError(400, "Avatar file is missing!")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+    if (!avatar.url){
+        throw new ApiError(400, "Error while uploading on avatar.")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        { new: true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "Avatar Updated Successfully!"
+        )
+    )
+
+})
+
+const updateUserCoverImage = asyncHandler( async (req, res) => {
+    const coverImageLocalPath = req.file?.path
+
+    if (!coverImageLocalPath){
+        throw new ApiError(400, "CoverImage file is missing!")
+    }
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+    if (!coverImage.url){
+        throw new ApiError(400, "Error while uploading on avatar.")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                avatar: coverImage.url
+            }
+        },
+        { new: true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "CoverImage Updated Successfully!"
+        )
+    )
+
+})
+
+
+
+export { registerUser, loginUser , logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage}
