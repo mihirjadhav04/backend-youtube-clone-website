@@ -282,7 +282,8 @@ const changeCurrentPassword = asyncHandler( async (req, res) => {
 const getCurrentUser = asyncHandler( async (req, res) => {
     return res
     .status(200)
-    .json(ApiResponse(
+    .json(
+        new ApiResponse(
         200,
         req.user,
         "current user fetched successfully."
@@ -299,7 +300,7 @@ const updateAccountDetails = asyncHandler( async (req, res) => {
         throw ApiError(400, "All fields are required!")
     }
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
@@ -324,7 +325,7 @@ const updateAccountDetails = asyncHandler( async (req, res) => {
 })
 
 //update user avatar
-
+// TODO: Delete the previous image data once the image is updated with latest one.
 const updateUserAvatar = asyncHandler( async (req, res) => {
     const avatarLocalPath = req.file?.path
 
